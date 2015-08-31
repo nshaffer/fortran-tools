@@ -20,26 +20,6 @@ contains
     end do
   end subroutine linear_coeff
 
-  real(dp) function linear_eval(x, xx, yy, bb, n) result(s)
-    ! Evaluates the piecewise linear interpolant
-    !   S_i(x) = y_i + b_i*(x-x_i)
-    ! at a point x.
-    integer, intent(in) :: n
-    real(dp), intent(in) :: x
-    real(dp), dimension(n), intent(in) :: xx, yy
-    real(dp), dimension(n-1), intent(in) :: bb
-
-    integer :: i
-
-    if ( (x.lt.xx(1)).or.(x.gt.xx(n)) ) then
-       call warn("Requested abcissa lies outside the given range. Defaulting to 0.d0.")
-       s = 0.d0
-    else
-       i = isearch(x, xx, n)
-       s = yy(i) + bb(i)*(x - xx(i))
-    end if
-  end function linear_eval
-    
   subroutine cubic_coeff(xx, yy, bb, cc, dd, n)
     ! Computes the N coefficients of the natural cubic spline fitting
     ! the set of N knots (xx, y). 
@@ -110,6 +90,26 @@ contains
     cc(n) = 3.d0*cc(n)
     dd(n) = dd(nm1)
   end subroutine cubic_coeff
+
+  real(dp) function linear_eval(x, xx, yy, bb, n) result(s)
+    ! Evaluates the piecewise linear interpolant
+    !   S_i(x) = y_i + b_i*(x-x_i)
+    ! at a point x.
+    integer, intent(in) :: n
+    real(dp), intent(in) :: x
+    real(dp), dimension(n), intent(in) :: xx, yy
+    real(dp), dimension(n-1), intent(in) :: bb
+
+    integer :: i
+
+    if ( (x.lt.xx(1)).or.(x.gt.xx(n)) ) then
+       call warn("Requested abcissa lies outside the given range. Defaulting to 0.d0.")
+       s = 0.d0
+    else
+       i = isearch(x, xx, n)
+       s = yy(i) + bb(i)*(x - xx(i))
+    end if
+  end function linear_eval
   
   real(dp) function cubic_eval(x, xx, yy, bb, cc, dd, n) result(s)
     ! Evaluates the cubic spline
@@ -121,8 +121,8 @@ contains
     real(dp), dimension(n), intent(in) :: bb, cc, dd
     integer :: i
     if ( (x.lt.xx(1)).or.(x.gt.xx(n)) ) then
+       call warn("Requested abcissa lies outside the given range. Defaulting to 0.")
        s = 0.d0
-       call warn("Requested abcissa lies outside the given range. Defaulting to 0.d0.")
     else
        i = isearch(x, xx, n)
        s = yy(i) + bb(i)*(x-xx(i)) + cc(i)*(x-xx(i))**2 + dd(i)*(x-xx(i))**3
